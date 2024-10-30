@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Positions Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+
+<h1>Positions Dashboard</h1>
+<table id="positionsTable">
+    <thead>
+        <tr>
+            <th>Symbol</th>
+            <th>Quantity</th>
+            <th>Average Cost</th>
+            <th>Market Price</th>
+            <th>Market Value</th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- Position data will be populated here -->
+    </tbody>
+</table>
+
+<script>
+    $(document).ready(function() {
+        const ws = new WebSocket("ws://localhost:8000/ws");
+
+        ws.onopen = function() {
+            console.log("Connected to WebSocket");
+        };
+
+        ws.onmessage = function(event) {
+            const positions = JSON.parse(event.data);
+            const $tbody = $("#positionsTable tbody");
+            $tbody.empty(); // Clear existing rows
+
+            positions.forEach(position => {
+                const $row = $("<tr></tr>");
+                $row.append($("<td></td>").text(position.symbol));
+                $row.append($("<td></td>").text(position.quantity));
+                $row.append($("<td></td>").text(position.avg_cost.toFixed(2)));
+                $row.append($("<td></td>").text(position.market_price.toFixed(2)));
+                $row.append($("<td></td>").text(position.market_value.toFixed(2)));
+                $tbody.append($row);
+            });
+        };
+
+        ws.onclose = function() {
+            console.log("Disconnected from WebSocket");
+        };
+
+        ws.onerror = function(error) {
+            console.error("WebSocket error: ", error);
+        };
+    });
+</script>
+
+</body>
+</html>
